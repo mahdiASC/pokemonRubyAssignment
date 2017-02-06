@@ -16,12 +16,32 @@ class Pokemon
 
 
 	def calcEffectiveness(pokemon)
-		if @type == "grass"
-			if pokemon.type == ""
-		elsif @type == "fire"
-
-		elsif @type == "water"
-
+		# Type chart
+		# https://i.stack.imgur.com/RBHCa.png
+		if @attack.type == "grass"
+			if pokemon.type == "fire"
+				0.8
+			elsif pokemon.type == "grass"
+				0.8
+			elsif pokemon.type == "water"
+				1.25
+			end
+		elsif @attack.type == "fire"
+			if pokemon.type == "grass"
+				1.25
+			elsif pokemon.type == "water"
+				0.8
+			elsif pokemon.type == "fire"
+				0.8
+			end
+		elsif @attack.type == "water"
+			if pokemon.type == "grass"
+				0.8
+			elsif pokemon.type == "water"
+				0.8
+			elsif pokemon.type == "fire"
+				1.25
+			end
 		else
 			puts "Something's not right!"
 		end
@@ -42,7 +62,9 @@ class Pokemon
 		effective = calcEffectiveness(pokemon)
 		#DO THIS FIRST
 		# https://pokemongo.gamepress.gg/damage-mechanics
-		(0.5 * (power) * (atk/defense) * (stab) * (effective)).floor + 1 
+		totalDamage = (0.5 * (power) * (atk/defense) * (stab) * (effective)).floor + 1 
+
+		pokemon.hp = pokemon.hp - totalDamage
 	end
 
 end
@@ -57,6 +79,47 @@ class Attack
 	end
 end
 
+class Player
+	attr_accessor :roster, :currentPokemon
+
+	def initialize
+		@roster = randRoster
+		@currentPokemon = @roster[0]
+	end
+
+	def changePokemon(index)
+		@currentPokemon = @roster[index]
+	end
+
+	def currentPokeAlive?
+		@currentPokemon.hp > 0
+	end
+
+	def anyAlive?
+		counter = 0
+		index = 0
+		@roster.length.times do
+			if @roster[index].hp > 0
+				counter = counter + 1
+			end
+		end
+		counter > 0
+	end
+end
+
+class CompPlayer < Player
+	# class inheritence from Player class
+	# want to have computer automatically make choice
+
+	def nextPokemon
+		index = 0
+		while !currentPokeAlive? do
+			index = index + 1
+			changePokemon(index)
+		end
+	end
+end
+
 # Variables exist only within the scope of the environment they're in
 
 def randPokemon
@@ -64,11 +127,11 @@ def randPokemon
 	# https://pokemongo.gamepress.gg/pokemon-list
 	name = ["Bulbasaur","Charmander","Squirtle"]
 	#not worrying about double effectiveness
-	types = ["Grass","Fire","Water"]
+	types = ["grass","fire","water"]
 	baseAtk = [118,116,94]
 	baseDef = [118,96,122]
 	baseStam = [90,78,88]
-	attack = [["Power Whip","Grass",70],["Flamethrower","Fire",55],["Aqua Tail","Water",45]]
+	attack = [["Power Whip","grass",70],["Flamethrower","fire",55],["Aqua Tail","water",45]]
 	pick = rand(name.length)
 
 	Pokemon.new(name[pick],types[pick],baseAtk[pick],baseDef[pick],baseStam[pick], Attack.new(attack[pick][0],attack[pick][1],attack[pick][2]))
@@ -82,3 +145,17 @@ def randRoster(num = 6)
 	output
 end
 
+class Game
+	attr_accessor :humanPlayer, :compPlayer
+
+	def initialize
+		@humanPlayer = Player.new
+		@compPlayer = CompPlayer.new
+	end
+
+	def call
+		# This contains your games logic and UX (puts)
+		Start game with player or computer going randomly
+
+	end
+end
