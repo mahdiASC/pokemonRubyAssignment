@@ -14,9 +14,7 @@ class Pokemon
 		@hp = ((baseStam+stamIV)*0.79).floor
 	end
 
-
 	def calcEffectiveness(pokemon)
-		# Type chart
 		# https://i.stack.imgur.com/RBHCa.png
 		if @attack.type == "grass"
 			if pokemon.type == "fire"
@@ -43,11 +41,17 @@ class Pokemon
 				1.25
 			end
 		else
+			#for debugging!
 			puts "Something's not right!"
 		end
 	end
 
 	def attacks(pokemon)
+		puts @name + " attacks " + pokemon.name + " with " + @attack.name + " for " + calDamage(pokemon).to_s + " damage!"
+		pokemon.hp = pokemon.hp - calDamage(pokemon)
+	end
+
+	def calDamage(pokemon)
 		power = @attack.damage
 		atk = (@baseAtk + @atkIV) * 0.79
 		defense = (pokemon.baseDef+pokemon.defIV) * 0.79
@@ -57,16 +61,13 @@ class Pokemon
 		else
 			stab = 1
 		end
-		# stab = @type == @attack.type ? 1.25 : 1
 
 		effective = calcEffectiveness(pokemon)
-		#DO THIS FIRST
+
 		# https://pokemongo.gamepress.gg/damage-mechanics
 		totalDamage = (0.5 * (power) * (atk/defense) * (stab) * (effective)).floor + 1 
-
-		pokemon.hp = pokemon.hp - totalDamage
+		totalDamage
 	end
-
 end
 
 class Attack
@@ -80,15 +81,12 @@ class Attack
 end
 
 class Player
-	attr_accessor :roster, :currentPokemon
+	attr_accessor :name, :roster, :currentPokemon
 
-	def initialize
+	def initialize(name)
+		@name = name
 		@roster = randRoster
 		@currentPokemon = @roster[0]
-	end
-
-	def changePokemon(index)
-		@currentPokemon = @roster[index]
 	end
 
 	def currentPokeAlive?
@@ -98,32 +96,25 @@ class Player
 	def anyAlive?
 		counter = 0
 		index = 0
-		@roster.length.times do
+		6.times do
 			if @roster[index].hp > 0
 				counter = counter + 1
 			end
+			index = index + 1
 		end
 		counter > 0
 	end
-end
 
-class CompPlayer < Player
-	# class inheritence from Player class
-	# want to have computer automatically make choice
-
-	def nextPokemon
+	def changePokemon
 		index = 0
 		while !currentPokeAlive? do
+			@currentPokemon = @roster[index]
 			index = index + 1
-			changePokemon(index)
 		end
 	end
 end
 
-# Variables exist only within the scope of the environment they're in
-
 def randPokemon
-	#Focus on 2 pokemon for now from
 	# https://pokemongo.gamepress.gg/pokemon-list
 	name = ["Bulbasaur","Charmander","Squirtle"]
 	#not worrying about double effectiveness
@@ -137,25 +128,82 @@ def randPokemon
 	Pokemon.new(name[pick],types[pick],baseAtk[pick],baseDef[pick],baseStam[pick], Attack.new(attack[pick][0],attack[pick][1],attack[pick][2]))
 end
 
-def randRoster(num = 6)
+def randRoster
 	output = []
-	num.times do
+	6.times do
 		output.push(randPokemon)
 	end
 	output
 end
 
 class Game
-	attr_accessor :humanPlayer, :compPlayer
+	attr_accessor :player1, :player2
 
 	def initialize
-		@humanPlayer = Player.new
-		@compPlayer = CompPlayer.new
+		@player1 = Player.new("Player 1")
+		@player2 = Player.new("Player 2")
 	end
 
 	def call
-		# This contains your games logic and UX (puts)
-		Start game with player or computer going randomly
+		# GAME LOGIC
+		# Intro for Player
+		# Start battle with player1 or player2 going randomly 50/50
+		# LOOP! - pokemon go back and forth battling until 1 pokemon has no more hp
+		# Next pokemon in line goes for that loser player
+		# LOOP! - Repeat until 1 player has no more pokemon in roster with hp
+		# end of the game - Determine winner
 
+		#INTRO
+		puts "Welcome to my Pokemon game!"
+
+		# LOOPS until one player out of usable pokemon
+		while playersHavePokemon? do
+			#50/50 who goes
+			if rand > 0.5
+				#player 1 goes first
+				while @player1.currentPokeAlive? && @player2.currentPokeAlive? do
+					@player1.currentPokemon.attacks(@player2.currentPokemon)
+					if @player2.currentPokeAlive?
+						@player2.currentPokemon.attacks(@player1.currentPokemon)
+					end
+				end
+			else
+				#player 2 goes first
+				while @player1.currentPokeAlive? && @player2.currentPokeAlive? do
+					@player2.currentPokemon.attacks(@player1.currentPokemon)
+					if @player1.currentPokeAlive?
+						@player1.currentPokemon.attacks(@player2.currentPokemon)
+					end
+				end
+			end #end of 50/50
+
+			if !@player1.currentPokeAlive? && @player1.anyAlive?
+				@player1.changePokemon
+			elsif !@player2.currentPokeAlive? && @player2.anyAlive?
+				@player2.changePokemon
+			end
+		end #a player no longer has usable pokemon
+
+		if @player1.anyAlive?
+			#player 1 wins!
+			winner = "Player 1"
+		else
+			#player 2 wins!
+			winner = "Player 2"
+		end
+		puts "The winner is " + winner + "!"
+	end
+
+	def playersHavePokemon?
+		#returns true if any player has usable pokemon
+		if @player1.anyAlive? && @player2.anyAlive? 
+			true
+		else  
+			false
+		end
 	end
 end
+
+# Initiating the game
+game = Game.new
+game.call
