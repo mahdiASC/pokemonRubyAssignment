@@ -11,7 +11,7 @@ class Pokemon
 		@defIV = rand(16)
 		@stamIV = rand(16)
 		@attack = attack
-		@hp = ((baseStam+stamIV)*0.79).floor
+		@hp = ((baseStam+@stamIV)*0.79).floor
 	end
 
 	def calcEffectiveness(pokemon)
@@ -23,6 +23,8 @@ class Pokemon
 				0.8
 			elsif pokemon.type == "water"
 				1.25
+			else
+				1
 			end
 		elsif @attack.type == "fire"
 			if pokemon.type == "grass"
@@ -31,6 +33,8 @@ class Pokemon
 				0.8
 			elsif pokemon.type == "fire"
 				0.8
+			else
+				1
 			end
 		elsif @attack.type == "water"
 			if pokemon.type == "grass"
@@ -39,6 +43,8 @@ class Pokemon
 				0.8
 			elsif pokemon.type == "fire"
 				1.25
+			else
+				1
 			end
 		else
 			#for debugging!
@@ -81,10 +87,9 @@ class Attack
 end
 
 class Player
-	attr_accessor :name, :roster, :currentPokemon
+	attr_accessor :roster, :currentPokemon
 
-	def initialize(name)
-		@name = name
+	def initialize
 		@roster = randRoster
 		@currentPokemon = @roster[0]
 	end
@@ -140,8 +145,8 @@ class Game
 	attr_accessor :player1, :player2
 
 	def initialize
-		@player1 = Player.new("Player 1")
-		@player2 = Player.new("Player 2")
+		@player1 = Player.new
+		@player2 = Player.new
 	end
 
 	def call
