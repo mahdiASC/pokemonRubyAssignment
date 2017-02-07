@@ -59,8 +59,8 @@ class Pokemon
 
 	def calDamage(pokemon)
 		power = @attack.damage
-		atk = @baseAtk + @atkIV
-		defense = pokemon.baseDef+pokemon.defIV
+		atk = (@baseAtk + @atkIV) * 0.79
+		defense = (pokemon.baseDef+pokemon.defIV) * 0.79
 
 		if @type == @attack.type
 			stab = 1.25
@@ -165,21 +165,20 @@ class Game
 			#50/50 who goes
 			if rand > 0.5
 				#player 1 goes first
-				while @player1.currentPokeAlive? && @player2.currentPokeAlive? do
-					@player1.currentPokemon.attacks(@player2.currentPokemon)
-					if @player2.currentPokeAlive?
-						@player2.currentPokemon.attacks(@player1.currentPokemon)
-					end
-				end
+				firstAttacker = @player1
+				secondAttacker = @player2
 			else
 				#player 2 goes first
-				while @player1.currentPokeAlive? && @player2.currentPokeAlive? do
-					@player2.currentPokemon.attacks(@player1.currentPokemon)
-					if @player1.currentPokeAlive?
-						@player1.currentPokemon.attacks(@player2.currentPokemon)
-					end
-				end
+				firstAttacker = @player2
+				secondAttacker = @player1
 			end #end of 50/50
+
+			while firstAttacker.currentPokeAlive? && secondAttacker.currentPokeAlive? do
+				firstAttacker.currentPokemon.attacks(secondAttacker.currentPokemon)
+				if secondAttacker.currentPokeAlive?
+					secondAttacker.currentPokemon.attacks(firstAttacker.currentPokemon)
+				end
+			end
 
 			if !@player1.currentPokeAlive? && @player1.anyAlive?
 				@player1.changePokemon
