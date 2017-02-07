@@ -59,8 +59,8 @@ class Pokemon
 
 	def calDamage(pokemon)
 		power = @attack.damage
-		atk = (@baseAtk + @atkIV) * 0.79
-		defense = (pokemon.baseDef+pokemon.defIV) * 0.79
+		atk = @baseAtk + @atkIV
+		defense = pokemon.baseDef+pokemon.defIV
 
 		if @type == @attack.type
 			stab = 1.25
@@ -71,8 +71,7 @@ class Pokemon
 		effective = calcEffectiveness(pokemon)
 
 		# https://pokemongo.gamepress.gg/damage-mechanics
-		totalDamage = (0.5 * (power) * (atk/defense) * (stab) * (effective)).floor + 1 
-		totalDamage
+		(0.5 * (power) * (atk/defense) * (stab) * (effective)).floor + 1 
 	end
 end
 
