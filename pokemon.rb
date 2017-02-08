@@ -180,6 +180,7 @@ class Game
 				end
 			end
 
+			# Checking which player needs to change pokemon AND has usable pokemon
 			if !@player1.currentPokeAlive? && @player1.anyAlive?
 				@player1.changePokemon
 			elsif !@player2.currentPokeAlive? && @player2.anyAlive?
